@@ -18,6 +18,7 @@ public class PlayScene : Scene
     private int _score; // 플레이어 점수
     private bool _isGameOver;   // 게임 오버 상태 여부
     private bool _isClear;  // 게임 클리어 상태 여부
+    private int _currentPosition = 0;
 
     public event GameAction PlayAgainRequested;
 
@@ -43,11 +44,11 @@ public class PlayScene : Scene
         SpawnEnemies(); // 적 생성, 벽 내부의 상단에 적들을 배치
     }
 
-    public override void Unload()
+    public override void Unload()   // 게임 종료 시 리소스 정리, 게임 오브젝트 리스트와 적, 총알 리스트를 모두 초기화하여 메모리 해제
     {
-        ClearGameObjects();
-        _enemies.Clear();
-        _bullets.Clear();
+        ClearGameObjects(); // 게임 오브젝트 리스트 초기화
+        _enemies.Clear();   // 적 리스트 초기화
+        _bullets.Clear();   // 총알 리스트 초기화
     }
 
     public override void Update(float deltaTime)    // 게임 로직 업데이트, 게임 오버 또는 클리어 상태에 따라 입력 처리 및 게임 오브젝트 업데이트를 수행
@@ -63,30 +64,30 @@ public class PlayScene : Scene
         }
 
         UpdateGameObjects(deltaTime);
-        HandleShootInput();
-        MoveEnemies(deltaTime);
-        ResolveCollisions();
-        CleanupInactiveObjects();
-        CheckEndConditions();
+        HandleShootInput(); // 플레이어의 총알 발사 입력 처리
+        MoveEnemies(deltaTime); // 적 이동 처리
+        ResolveCollisions();    // 총알과 적의 충돌 처리
+        CleanupInactiveObjects();  // 비활성화된 게임 오브젝트 정리
+        CheckEndConditions();   // 게임 종료 조건 확인
     }
 
     private void SpawnEnemies() // 적 생성 메서드, 벽 내부의 상단에 적들을 배치하기 위해 시작 좌표를 계산하고, 이중 루프를 통해 적들을 생성하여 게임 오브젝트로 추가
     {
-        int startX = Wall.Left + 3;
-        int startY = Wall.Top + 2;
+        int startX = Wall.Left + 3; // 적 시작 X 좌표, 벽의 왼쪽에서 3칸 떨어진 위치
+        int startY = Wall.Top + 2;  // 적 시작 Y 좌표, 벽의 위쪽에서 2칸 떨어진 위치
 
         for (int row = 0; row < k_EnemyRows; row++)
         {
             for (int col = 0; col < k_EnemyCols; col++)
             {
-                Enemy enemy = new Enemy(this, startX + (col * 4), startY + (row * 2));
+                Enemy enemy = new Enemy(this, startX + (col * 4), startY + (row * 2));  // 적 생성, 각 적은 열마다 4칸, 행마다 2칸 간격으로 배치
                 _enemies.Add(enemy);
                 AddGameObject(enemy);
             }
         }
     }
 
-    private void HandleShootInput()
+    private void HandleShootInput() // 플레이어의 총알 발사 입력 처리 메서드, 스페이스바가 눌렸고 플레이어가 총알을 발사할 수 있는 상태인 경우, 새로운 총알을 생성하여 게임 오브젝트로 추가하고, 플레이어의 발사 쿨다운을 초기화
     {
         if (Input.IsKeyDown(ConsoleKey.Spacebar) && _player.CanShoot())
         {
@@ -99,6 +100,7 @@ public class PlayScene : Scene
 
     private void MoveEnemies(float deltaTime)   // 적 이동 메서드, 일정 간격마다 좌우로만 이동하며 벽에 닿으면 방향을 반전
     {
+        _currentPosition++;
         _enemyStepTimer += deltaTime;
         if (_enemyStepTimer < k_EnemyStepInterval)
         {
@@ -106,30 +108,31 @@ public class PlayScene : Scene
         }
 
         _enemyStepTimer = 0f;
-        bool hitEdge = false;
 
-        for (int i = 0; i < _enemies.Count; i++)
+
+        for (int i = 0; i < _enemies.Count; i++)    // 적 리스트를 순회하여 각 적이 다음 이동 위치에서 벽에 닿는지 확인, 만약 닿는 경우 방향을 반전하도록 플래그 설정
         {
             Enemy enemy = _enemies[i];
-            if (!enemy.IsActive)
+            if (!enemy.IsActive)    // 비활성화된 적은 이동하지 않으므로 건너뜀
             {
                 continue;
             }
 
-            int nextX = enemy.X + _enemyDirection;
-            if (nextX <= Wall.Left + 1 || nextX >= Wall.Right - 1)
+            int nextX = enemy.X + _enemyDirection;  // 다음 이동 위치의 X 좌표 계산, 현재 적의 X 좌표에 이동 방향을 더하여 다음 위치를 예측
+
+            if (_currentPosition % 2 == 0)   // 현재 위치에서 한칸씩만 이동
             {
-                hitEdge = true;
-                break;
+                _enemyDirection *= -1;    // 이동 방향 반전, 다음 이동에서 반대 방향으로 이동하도록 설정
+                break;  // 방향이 반전되면 나머지 적들은 아직 이동하지 않았으므로 루프를 종료하여 다음 업데이트에서 이동하도록 함
+            }
+            else if (_currentPosition % 2 == 1)   // 현재 위치에서 한칸씩만 이동
+            {
+                _enemyDirection *= +1;    // 이동 방향 반전, 다음 이동에서 반대 방향으로 이동하도록 설정
+                break;  // 방향이 반전되면 나머지 적들은 아직 이동하지 않았으므로 루프를 종료하여 다음 업데이트에서 이동하도록 함
             }
         }
 
-        if (hitEdge)
-        {
-            _enemyDirection *= -1;
-        }
-
-        for (int i = 0; i < _enemies.Count; i++)
+        for (int i = 0; i < _enemies.Count; i++)    // 적 리스트를 순회하여 각 적이 활성화된 경우, 현재 방향에 따라 이동하도록 처리
         {
             if (_enemies[i].IsActive)
             {
