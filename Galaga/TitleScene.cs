@@ -27,10 +27,10 @@ public class TitleScene : Scene
 
     public override void Draw(ScreenBuffer buffer)
     {
-        buffer.WriteTextCentered(6, "Galaga ", ConsoleColor.Yellow);
+        buffer.WriteTextCentered(6, "Galaga ", ConsoleColor.Green);
         buffer.WriteTextCentered(10, "Arrow Keys: Move");
         buffer.WriteTextCentered(11, "Space: Fire");
         buffer.WriteTextCentered(13, "ESC: Quit");
-        buffer.WriteTextCentered(15, "Press Enter to Start", ConsoleColor.Green);
+        buffer.WriteTextCentered(15, "Press Enter to Start", ConsoleColor.Yellow);
     }
 }

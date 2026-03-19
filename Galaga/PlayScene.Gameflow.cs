@@ -26,7 +26,7 @@ public partial class PlayScene
 
             if (EnemyAttack.CrushEnemy(enemy, _player.X, _player.Y))
             {
-                _isGameOver = true;
+                LoseLife();
                 return;
             }
         }
@@ -126,7 +126,7 @@ public partial class PlayScene
 
             if (enemy.Y >= _player.Y)
             {
-                _isGameOver = true;
+                LoseLife();
                 return;
             }
         }

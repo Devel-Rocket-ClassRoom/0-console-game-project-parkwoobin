@@ -8,6 +8,8 @@ using NAudio.Wave;
 public class Enemy : GameObject
 {
     private const float k_EffectDuration = 0.25f;   // 격추 이펙트 표시 시간 (초)
+    private readonly int _spawnX;
+    private readonly int _spawnY;
 
     public enum EnemyType
     {
@@ -43,6 +45,8 @@ public class Enemy : GameObject
     public Enemy(Scene scene, int x, int y, EnemyType type) : base(scene)
     {
         Name = $"Enemy-{type}";
+        _spawnX = x;
+        _spawnY = y;
         X = x;
         Y = y;
         Type = type;
@@ -97,6 +101,20 @@ public class Enemy : GameObject
                 Type = EnemyType.Boss2;
                 break;
         }
+    }
+
+    public void ResetToSpawnPosition()
+    {
+        ResetChargeType();
+        X = _spawnX;
+        Y = _spawnY;
+        ChargeTargetX = _spawnX;
+        ChargeTargetY = _spawnY;
+        ChargeStartX = _spawnX;
+        ChargeStartY = _spawnY;
+        ChargePattern = 0;
+        ChargeReachedTarget = false;
+        ChargePassedWall = false;
     }
 
     public bool IsHitAt(int x, int y)   // 주어진 좌표가 적의 위치와 겹치는지 확인하는 메서드, 적의 유형에 따라 폭이 다르므로 해당 유형에 맞게 범위를 계산하여 판단

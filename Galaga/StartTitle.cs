@@ -116,6 +116,8 @@ public class StartTitle : Scene
         buffer.WriteText(43, 15, $"Stage: {_stage}/{StageData.MaxStage}", ConsoleColor.White);
         buffer.WriteText(43, 0, "Move: Left/Right", ConsoleColor.DarkGray);
         buffer.WriteText(48, 1, "Fire: Space", ConsoleColor.DarkGray);
+        buffer.WriteText(43, 10, "/A\\ /A\\ /A\\", ConsoleColor.White);
+
 
         switch (_phase)
         {

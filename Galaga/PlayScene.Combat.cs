@@ -94,7 +94,7 @@ public partial class PlayScene
                 if (bullet.Y == _player.Y && bullet.X >= _player.X - 1 && bullet.X <= _player.X + 1)
                 {
                     bullet.IsActive = false;
-                    _isGameOver = true;
+                    LoseLife();
                     return;
                 }
 
