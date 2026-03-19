@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-
+// 게임의 각 스테이지에 대한 적 배치 정보를 관리하는 클래스, 최대 스테이지 수와 각 스테이지마다 적의 위치와 유형을 정의하여 반환하는 메서드를 포함
 public readonly struct EnemySpawn
 {
     public EnemySpawn(int x, int y, Enemy.EnemyType type)

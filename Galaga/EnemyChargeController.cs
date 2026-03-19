@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+// 게임의 적 돌격 설정을 관리하는 클래스, 돌격 시도 간격, 돌격 시작 확률, 동시에 돌격할 수 있는 적의 최대 수 등의 상수를 정의하여 게임 내에서 사용
 public class EnemyChargeController
 {
     private readonly HashSet<Enemy> _chargingEnemies = new HashSet<Enemy>();

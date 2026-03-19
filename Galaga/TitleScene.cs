@@ -2,7 +2,7 @@ using Framework.Engine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+// 게임의 타이틀 화면을 나타내는 클래스, 게임 시작을 위한 안내 메시지와 입력 처리를 담당
 public class TitleScene : Scene
 {
 

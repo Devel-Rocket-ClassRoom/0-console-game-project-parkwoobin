@@ -1,3 +1,6 @@
+
+
+// 게임의 플레이 씬을 나타내는 클래스, 적의 생성과 이동, 충돌 처리, 게임 종료 조건 등을 관리하는 게임플로우 관련 메서드들을 포함
 public partial class PlayScene
 {
     private void SpawnEnemies()

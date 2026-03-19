@@ -1,7 +1,7 @@
 using System;
 using Framework.Engine;
 
-
+// 게임의 메인 클래스, 게임의 초기화, 업데이트, 그리기, 씬 전환 등을 관리하는 역할을 담당
 public class GalagaGame : GameApp
 {
     private readonly SceneManager<Scene> _scenes = new SceneManager<Scene>();

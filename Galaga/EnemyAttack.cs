@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+// 게임의 적 총알 발사와 플레이어와의 충돌 처리 등을 담당하는 클래스, 동시에 존재할 수 있는 적 총알의 최대 개수를 제한하고, 적이 플레이어를 향해 돌진하는 로직을 포함
 public static class EnemyAttack
 {
     public const int MaxEnemyBullets = 2;   // 동시에 존재할 수 있는 적 총알의 최대 개수, 게임의 난이도 조절을 위해 설정된 상수
@@ -84,7 +85,7 @@ public static class EnemyAttack
         {
             dx = -1;
         }
-        
+
         // 적의 유형에 따라 폭이 다르므로 해당 유형에 맞게 범위를 계산하여 이동 후 충돌 감지
         int halfWidth = (enemy.Type == Enemy.EnemyType.Boss1 || enemy.Type == Enemy.EnemyType.Boss2 ||
                          enemy.Type == Enemy.EnemyType.Boss1_Rush || enemy.Type == Enemy.EnemyType.Boss2_Rush) ? 2 : 1;

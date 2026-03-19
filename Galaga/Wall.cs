@@ -1,6 +1,6 @@
 using System;
 using Framework.Engine;
-
+// 벽을 나타내는 클래스, 게임의 경계 역할을 하며 플레이어와 적이 이 영역을 벗어나지 못하도록 함
 public class Wall : GameObject
 {
     public const int Left = 1;

@@ -4,6 +4,7 @@ using Framework.Engine;
 using System.IO;
 using NAudio.Wave;
 
+// 게임의 적 캐릭터를 나타내는 클래스, 적의 위치, 유형, 격추 이펙트, 돌진 상태 등을 관리하며, 적의 이동과 그리기 로직도 포함
 public class Enemy : GameObject
 {
     private const float k_EffectDuration = 0.25f;   // 격추 이펙트 표시 시간 (초)

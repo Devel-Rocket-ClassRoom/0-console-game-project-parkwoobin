@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Framework.Engine;
 using System.IO;
 using NAudio.Wave;
-
+// 게임의 시작 연출을 담당하는 클래스, 스테이지 번호와 READY 메시지를 순차적으로 표시하며, 시작 음악 재생과 타이밍 관리를 수행
 public class StartTitle : Scene
 {
     private const float k_StageTextDuration = 2f; // 스테이지 텍스트 표시 시간 (초)

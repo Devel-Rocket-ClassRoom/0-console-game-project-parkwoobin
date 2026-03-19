@@ -4,6 +4,7 @@ using Framework.Engine;
 using System.IO;
 using NAudio.Wave;
 
+// 게임의 총알을 나타내는 클래스, 총알의 위치와 이동, 그리기 로직을 담당하며, 적과 플레이어의 총알을 구분하여 처리
 public class Bullet : GameObject
 {
     private const float k_MoveInterval = 0.025f; // 총알이 한 칸 이동하는 간격 (초)
