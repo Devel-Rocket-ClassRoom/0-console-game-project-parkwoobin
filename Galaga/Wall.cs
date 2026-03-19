@@ -4,9 +4,9 @@ using Framework.Engine;
 public class Wall : GameObject
 {
     public const int Left = 1;
-    public const int Top = 2;
+    public const int Top = 1;
     public const int Right = 38;
-    public const int Bottom = 17;
+    public const int Bottom = 18;
     public Wall(Scene scene) : base(scene)
     {
         Name = "Wall";
