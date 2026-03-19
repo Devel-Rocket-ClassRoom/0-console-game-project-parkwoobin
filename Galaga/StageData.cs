@@ -57,7 +57,7 @@ public static class StageData   // 게임의 각 스테이지에 대한 적 배�
 
     private static LinkedList<EnemySpawn> BuildEnemyGrid(int stage)
     {
-        const int rows = 4;
+        const int rows = 2;
         const int cols = 8;
         const int startX = 4;
         const int startY = 4;

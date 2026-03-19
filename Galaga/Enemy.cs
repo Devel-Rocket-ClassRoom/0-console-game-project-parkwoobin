@@ -14,14 +14,23 @@ public class Enemy : GameObject
         Zako,
         Boss1,
         Boss2,
-
+        Goei_Rush,
+        Zako_Rush,
+        Boss1_Rush,
+        Boss2_Rush,
     }
 
-    public int X { get; private set; }
-    public int Y { get; private set; }
-    public EnemyType Type { get; private set; }
+    public int X { get; set; }
+    public int Y { get; set; }
+    public EnemyType Type { get; set; }
     private float _effectTimer;  // 격추 이펙트 타이머
     public bool IsShowingEffect { get; private set; }  // 격추 이펙트 표시 중 여부
+    public int ChargeTargetX { get; set; }  // 돌진 목표 X 좌표
+    public int ChargeTargetY { get; set; }  // 돌진 목표 Y 좌표
+    public int ChargeStartX { get; set; }  // 돌진 시작 시 원래 X 좌표
+    public int ChargeStartY { get; set; }  // 돌진 시작 시 원래 Y 좌표
+    public bool ChargeReachedTarget { get; set; }  // 플레이어 Y 좌표에 도달했는가
+    public bool ChargePassedWall { get; set; }  // 벽을 통과했는가
     private static readonly object s_AudioLock = new object();
     private static readonly string Zako_HitSoundPath = Path.Combine(AppContext.BaseDirectory, "BGM", "006 Hit on Zako.mp3");   // 적 격추 사운드 파일 경로
     private static readonly string Goei_HitSoundPath = Path.Combine(AppContext.BaseDirectory, "BGM", "007 Hit on Goei.mp3");   // 적 격추 사운드 파일 경로
@@ -44,6 +53,50 @@ public class Enemy : GameObject
         X += dx;
     }
 
+    public void MoveBy(int dx, int dy) // 적을 (dx, dy)만큼 이동시키는 메서드
+    {
+        X += dx;
+        Y += dy;
+    }
+
+    public void SetChargeType() // 돌진 상태로 타입을 변경하는 메서드
+    {
+        switch (Type)
+        {
+            case EnemyType.Goei:
+                Type = EnemyType.Goei_Rush;
+                break;
+            case EnemyType.Zako:
+                Type = EnemyType.Zako_Rush;
+                break;
+            case EnemyType.Boss1:
+                Type = EnemyType.Boss1_Rush;
+                break;
+            case EnemyType.Boss2:
+                Type = EnemyType.Boss2_Rush;
+                break;
+        }
+    }
+
+    public void ResetChargeType() // 돌진 상태를 해제하고 원래 타입으로 돌리는 메서드
+    {
+        switch (Type)
+        {
+            case EnemyType.Goei_Rush:
+                Type = EnemyType.Goei;
+                break;
+            case EnemyType.Zako_Rush:
+                Type = EnemyType.Zako;
+                break;
+            case EnemyType.Boss1_Rush:
+                Type = EnemyType.Boss1;
+                break;
+            case EnemyType.Boss2_Rush:
+                Type = EnemyType.Boss2;
+                break;
+        }
+    }
+
     public bool IsHitAt(int x, int y)   // 주어진 좌표가 적의 위치와 겹치는지 확인하는 메서드, 적의 유형에 따라 폭이 다르므로 해당 유형에 맞게 범위를 계산하여 판단
     {
         if (y != Y)
@@ -51,7 +104,8 @@ public class Enemy : GameObject
             return false;
         }
 
-        int halfWidth = Type == EnemyType.Boss1 || Type == EnemyType.Boss2 ? 2 : 1;
+        int halfWidth = (Type == EnemyType.Boss1 || Type == EnemyType.Boss2 ||
+                         Type == EnemyType.Boss1_Rush || Type == EnemyType.Boss2_Rush) ? 2 : 1;
         return x >= X - halfWidth && x <= X + halfWidth;
     }
 
@@ -60,8 +114,15 @@ public class Enemy : GameObject
     {
         if (Type == EnemyType.Boss1)
         {
-            PlayHitSound(EnemyType.Boss1);  // Boss1 사운드 재생 (변환 전)
+            PlayHitSound(Type);
             Type = EnemyType.Boss2;
+            return false;
+        }
+
+        if (Type == EnemyType.Boss1_Rush)
+        {
+            PlayHitSound(Type);
+            Type = EnemyType.Boss2_Rush;
             return false;
         }
 
@@ -77,12 +138,16 @@ public class Enemy : GameObject
         switch (type)
         {
             case EnemyType.Zako:
+            case EnemyType.Zako_Rush:
                 return Zako_HitSoundPath;
             case EnemyType.Goei:
+            case EnemyType.Goei_Rush:
                 return Goei_HitSoundPath;
             case EnemyType.Boss1:
+            case EnemyType.Boss1_Rush:
                 return Boss1_HitSoundPath;
             case EnemyType.Boss2:
+            case EnemyType.Boss2_Rush:
                 return Boss2_HitSoundPath;
             default:
                 return Zako_HitSoundPath;
@@ -160,9 +225,19 @@ public class Enemy : GameObject
                 buffer.SetCell(X, Y, 'W', ConsoleColor.Gray);
                 buffer.SetCell(X + 1, Y, ']', ConsoleColor.Red);
                 break;
+            case EnemyType.Goei_Rush:
+                buffer.SetCell(X - 1, Y, '[', ConsoleColor.Red);
+                buffer.SetCell(X, Y, 'M', ConsoleColor.Gray);
+                buffer.SetCell(X + 1, Y, ']', ConsoleColor.Red);
+                break;
             case EnemyType.Zako:
                 buffer.SetCell(X - 1, Y, '[', ConsoleColor.Blue);
                 buffer.SetCell(X, Y, 'B', ConsoleColor.Yellow);
+                buffer.SetCell(X + 1, Y, ']', ConsoleColor.Blue);
+                break;
+            case EnemyType.Zako_Rush:
+                buffer.SetCell(X - 1, Y, '[', ConsoleColor.Blue);
+                buffer.SetCell(X, Y, 'ꓭ', ConsoleColor.Yellow);
                 buffer.SetCell(X + 1, Y, ']', ConsoleColor.Blue);
                 break;
             case EnemyType.Boss1:
@@ -172,12 +247,26 @@ public class Enemy : GameObject
                 buffer.SetCell(X + 1, Y, ']', ConsoleColor.Green);
                 buffer.SetCell(X + 2, Y, '┐', ConsoleColor.Green);
                 break;
+            case EnemyType.Boss1_Rush:
+                buffer.SetCell(X - 2, Y, '└', ConsoleColor.Green);
+                buffer.SetCell(X - 1, Y, '[', ConsoleColor.Green);
+                buffer.SetCell(X, Y, 'Ә', ConsoleColor.DarkYellow);
+                buffer.SetCell(X + 1, Y, ']', ConsoleColor.Green);
+                buffer.SetCell(X + 2, Y, '┘', ConsoleColor.Green);
+                break;
             case EnemyType.Boss2:
                 buffer.SetCell(X - 2, Y, '┌', ConsoleColor.Blue);
                 buffer.SetCell(X - 1, Y, '[', ConsoleColor.Blue);
                 buffer.SetCell(X, Y, 'G', ConsoleColor.DarkMagenta);
                 buffer.SetCell(X + 1, Y, ']', ConsoleColor.Blue);
                 buffer.SetCell(X + 2, Y, '┐', ConsoleColor.Blue);
+                break;
+            case EnemyType.Boss2_Rush:
+                buffer.SetCell(X - 2, Y, '└', ConsoleColor.Blue);
+                buffer.SetCell(X - 1, Y, '[', ConsoleColor.Blue);
+                buffer.SetCell(X, Y, 'Ә', ConsoleColor.DarkMagenta);
+                buffer.SetCell(X + 1, Y, ']', ConsoleColor.Blue);
+                buffer.SetCell(X + 2, Y, '┘', ConsoleColor.Blue);
                 break;
         }
     }

@@ -29,7 +29,8 @@ public class TitleScene : Scene
     {
         buffer.WriteTextCentered(6, "Galaga ", ConsoleColor.Yellow);
         buffer.WriteTextCentered(10, "Arrow Keys: Move");
-        buffer.WriteTextCentered(12, "ESC: Quit");
+        buffer.WriteTextCentered(11, "Space: Fire");
+        buffer.WriteTextCentered(13, "ESC: Quit");
         buffer.WriteTextCentered(15, "Press Enter to Start", ConsoleColor.Green);
     }
 }

@@ -27,7 +27,7 @@ public static class EnemyAttack
         }
 
         List<Enemy> candidates = new List<Enemy>();
-        for (int i = 0; i < enemies.Count; i++)
+        for (int i = 0; i < enemies.Count; i++) // 활성화된 적 중에서 총알을 발사할 후보를 선정하는 루프, 동시에 존재할 수 있는 적 총알의 개수를 제한하기 위해 현재 활성화된 적 총알의 개수를 세고, 랜덤 확률에 따라 총알 발사 시도를 결정한 후, 후보 리스트에 추가
         {
             if (enemies[i].IsActive)
             {
@@ -35,7 +35,7 @@ public static class EnemyAttack
             }
         }
 
-        if (candidates.Count == 0)
+        if (candidates.Count == 0)  // 총알을 발사할 후보가 없는 경우 null을 반환하여 총알 발사를 하지 않도록 함
         {
             return null;
         }
@@ -43,7 +43,7 @@ public static class EnemyAttack
         return candidates[random.Next(candidates.Count)];
     }
 
-    public static bool CrushEnemy(Enemy enemy, int playerX, int playerY)
+    public static bool CrushEnemy(Enemy enemy, int playerX, int playerY)    // 적과 플레이어가 겹치는지 확인하는 메서드, 적이 플레이어와 같은 Y 좌표에 있고, X 좌표가 겹치는 범위에 있는지 판단하여 겹침 여부를 반환
     {
         if (enemy == null || !enemy.IsActive)
         {
@@ -55,7 +55,8 @@ public static class EnemyAttack
             return false;
         }
 
-        int enemyHalfWidth = enemy.Type == Enemy.EnemyType.Boss1 || enemy.Type == Enemy.EnemyType.Boss2 ? 2 : 1;
+        int enemyHalfWidth = (enemy.Type == Enemy.EnemyType.Boss1 || enemy.Type == Enemy.EnemyType.Boss2 ||
+                              enemy.Type == Enemy.EnemyType.Boss1_Rush || enemy.Type == Enemy.EnemyType.Boss2_Rush) ? 2 : 1;
         const int playerHalfWidth = 1; // '/A\\' 3칸 폭
 
         int enemyLeft = enemy.X - enemyHalfWidth;
@@ -64,5 +65,44 @@ public static class EnemyAttack
         int playerRight = playerX + playerHalfWidth;
 
         return enemyLeft <= playerRight && enemyRight >= playerLeft;
+    }
+
+    public static bool ChargeTowardsPlayer(Enemy enemy, int playerX, int playerY)
+    {
+        if (enemy == null || !enemy.IsActive)
+        {
+            return false;
+        }
+
+        // 돌진 시작 시점의 플레이어 위치를 향해 한 칸씩 이동(가로 1칸 + 세로 1칸)해서 돌진이 보이도록 처리
+        int dx = 0;
+        if (enemy.X < enemy.ChargeTargetX)
+        {
+            dx = 1;
+        }
+        else if (enemy.X > enemy.ChargeTargetX)
+        {
+            dx = -1;
+        }
+        
+        // 적의 유형에 따라 폭이 다르므로 해당 유형에 맞게 범위를 계산하여 이동 후 충돌 감지
+        int halfWidth = (enemy.Type == Enemy.EnemyType.Boss1 || enemy.Type == Enemy.EnemyType.Boss2 ||
+                         enemy.Type == Enemy.EnemyType.Boss1_Rush || enemy.Type == Enemy.EnemyType.Boss2_Rush) ? 2 : 1;
+        int nextX = enemy.X + dx;
+
+        if (nextX - halfWidth < Wall.Left)
+        {
+            nextX = Wall.Left + halfWidth;
+        }
+        else if (nextX + halfWidth > Wall.Right)
+        {
+            nextX = Wall.Right - halfWidth;
+        }
+
+        // 실제 이동 처리 (가로 + 세로 1칸)
+        enemy.MoveBy(nextX - enemy.X, 1);
+
+        // 현재 플레이어 위치와의 충돌 감지
+        return CrushEnemy(enemy, playerX, playerY);
     }
 }
