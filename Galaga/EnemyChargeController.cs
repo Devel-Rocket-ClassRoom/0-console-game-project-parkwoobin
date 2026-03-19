@@ -7,13 +7,14 @@ public class EnemyChargeController
     private readonly HashSet<Enemy> _chargingEnemies = new HashSet<Enemy>();
     private readonly Random _random;
     private float _chargeTimer;
+    private float _moveTimer;
 
-    public EnemyChargeController(Random random)
+    public EnemyChargeController(Random random) // 적 돌격 컨트롤러의 생성자, 랜덤 객체를 받아서 돌격 시작 확률 계산에 사용
     {
         _random = random;
     }
 
-    public bool IsCharging(Enemy enemy)
+    public bool IsCharging(Enemy enemy) // 특정 적이 현재 돌격 중인지 확인하는 메서드, 돌격 중인 적들을 저장하는 HashSet에서 해당 적이 존재하는지 여부를 반환
     {
         return _chargingEnemies.Contains(enemy);
     }
@@ -22,6 +23,7 @@ public class EnemyChargeController
     {
         _chargingEnemies.Clear();
         _chargeTimer = 0f;
+        _moveTimer = 0f;
     }
 
     public void Remove(Enemy enemy)
@@ -29,9 +31,10 @@ public class EnemyChargeController
         _chargingEnemies.Remove(enemy);
     }
 
-    public bool Update(float deltaTime, List<Enemy> enemies, int playerX, int playerY)
+    public bool Update(float deltaTime, List<Enemy> enemies, int playerX, int playerY)  // 적 돌격을 업데이트하는 메서드, 돌격 시도 간격마다 새로운 돌격을 시작할 적들을 선정하여 돌격 상태로 설정하고, 돌격 중인 적들을 플레이어 방향으로 이동시키며 충돌 체크와 화면 밖으로 나가는 경우 복귀 처리 등을 수행
     {
         _chargeTimer += deltaTime;
+        _moveTimer += deltaTime;
 
         if (_chargeTimer >= EnemyChargeSettings.IntervalSeconds)
         {
@@ -39,123 +42,103 @@ public class EnemyChargeController
             TryStartCharges(enemies, playerX, playerY);
         }
 
-        if (_chargingEnemies.Count == 0)
+        if (_moveTimer < EnemyChargeSettings.MoveIntervalSeconds)
         {
             return false;
         }
 
+        _moveTimer = 0f;
+
         List<Enemy> finished = new List<Enemy>();
 
-        foreach (Enemy charger in _chargingEnemies)
+        foreach (var e in _chargingEnemies)
         {
-            if (charger == null || !charger.IsActive)
+            if (e == null || !e.IsActive)
             {
-                finished.Add(charger);
+                finished.Add(e);
                 continue;
             }
 
-            if (charger.ChargePassedWall)
+            MoveEnemy(e, playerX, playerY);
+
+            // 충돌 체크
+            if (EnemyAttack.CrushEnemy(e, playerX, playerY))
+                return true;
+
+            // 화면 밖 → 복귀
+            if (e.Y > Wall.Bottom)
             {
-                charger.Y += 1;
-
-                if (charger.X > charger.ChargeStartX)
-                {
-                    charger.X -= 1;
-                }
-                else if (charger.X < charger.ChargeStartX)
-                {
-                    charger.X += 1;
-                }
-
-                if (EnemyAttack.CrushEnemy(charger, playerX, playerY))
-                {
-                    return true;
-                }
-            }
-            else
-            {
-                if (EnemyAttack.ChargeTowardsPlayer(charger, playerX, playerY))
-                {
-                    return true;
-                }
-
-                if (charger.Y >= charger.ChargeTargetY)
-                {
-                    charger.ChargeReachedTarget = true;
-                }
-
-                if (charger.Y > Wall.Bottom)
-                {
-                    // 벽 아래를 지나가면 화면 위로 래핑
-                    charger.Y = 0;
-                    charger.ChargePassedWall = true;
-                }
-            }
-
-            if (charger.ChargePassedWall && charger.Y >= charger.ChargeStartY && charger.X == charger.ChargeStartX)
-            {
-                charger.ResetChargeType();
-                charger.Y = charger.ChargeStartY;
-                charger.ChargeReachedTarget = false;
-                charger.ChargePassedWall = false;
-                finished.Add(charger);
+                e.ResetChargeType();
+                e.Y = e.ChargeStartY;
+                e.X = e.ChargeStartX;
+                finished.Add(e);
             }
         }
-
-        for (int i = 0; i < finished.Count; i++)
-        {
-            _chargingEnemies.Remove(finished[i]);
-        }
+        foreach (var e in finished)
+            _chargingEnemies.Remove(e);
 
         return false;
     }
 
+    public static void MoveEnemy(Enemy e, int playerX, int playerY)
+    {
+        switch (e.ChargePattern)
+        {
+            case 0: // 💥 직선 다이빙
+                e.X += Math.Sign(playerX - e.X);
+                e.Y += EnemyChargeSettings.MoveStep;
+                break;
+
+            case 1: // 🌀 지그재그
+                e.Y += EnemyChargeSettings.MoveStep;
+                e.X += (int)Math.Round(Math.Sin(e.Y * 0.6) * 1.5);
+                break;
+
+            case 2: // 🌀 원형
+                e.Y += EnemyChargeSettings.MoveStep;
+                e.X += (int)Math.Round(Math.Cos(e.Y * 0.6) * 1.5);
+                break;
+
+            default:
+                e.Y += EnemyChargeSettings.MoveStep;
+                break;
+        }
+    }
     private void TryStartCharges(List<Enemy> enemies, int playerX, int playerY)
     {
         if (_chargingEnemies.Count >= EnemyChargeSettings.MaxSimultaneousCharges)
-        {
             return;
-        }
 
         if (_random.NextDouble() > EnemyChargeSettings.StartChance)
-        {
             return;
-        }
 
         List<Enemy> candidates = new List<Enemy>();
         for (int i = 0; i < enemies.Count; i++)
         {
-            Enemy enemy = enemies[i];
-            if (enemy.IsActive && !enemy.IsShowingEffect && enemy.Y < playerY && !_chargingEnemies.Contains(enemy))
-            {
-                candidates.Add(enemy);
-            }
+            Enemy e = enemies[i];
+            if (!e.IsActive || e.IsShowingEffect || _chargingEnemies.Contains(e))
+                continue;
+
+            if (e.Y >= playerY)
+                continue;
+
+            candidates.Add(e);
         }
 
         if (candidates.Count == 0)
-        {
             return;
-        }
 
-        int remainingSlots = EnemyChargeSettings.MaxSimultaneousCharges - _chargingEnemies.Count;
-        int maxStartCount = Math.Min(remainingSlots, candidates.Count);
-        int startCount = _random.Next(1, maxStartCount + 1);
+        int pickIndex = _random.Next(candidates.Count);
+        Enemy charger = candidates[pickIndex];
 
-        for (int i = 0; i < startCount; i++)
-        {
-            int index = _random.Next(candidates.Count);
-            Enemy charger = candidates[index];
-            candidates.RemoveAt(index);
+        // 초기 설정
+        charger.ChargeStartX = charger.X;
+        charger.ChargeStartY = charger.Y;
+        charger.ChargeTargetX = playerX;
+        charger.ChargeTargetY = playerY;
+        charger.ChargePattern = _random.Next(3); // 0: 직진, 1: 지그재그, 2: 원형
+        charger.SetChargeType();
 
-            charger.ChargeStartX = charger.X;
-            charger.ChargeStartY = charger.Y;
-            charger.ChargeTargetX = playerX;
-            charger.ChargeTargetY = playerY;
-            charger.ChargeReachedTarget = false;
-            charger.ChargePassedWall = false;
-            charger.SetChargeType();
-
-            _chargingEnemies.Add(charger);
-        }
+        _chargingEnemies.Add(charger);
     }
 }

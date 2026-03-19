@@ -30,6 +30,7 @@ public class Enemy : GameObject
     public int ChargeTargetY { get; set; }  // 돌진 목표 Y 좌표
     public int ChargeStartX { get; set; }  // 돌진 시작 시 원래 X 좌표
     public int ChargeStartY { get; set; }  // 돌진 시작 시 원래 Y 좌표
+    public int ChargePattern { get; set; }  // 0: 직선, 1: 지그재그, 2: 코사인
     public bool ChargeReachedTarget { get; set; }  // 플레이어 Y 좌표에 도달했는가
     public bool ChargePassedWall { get; set; }  // 벽을 통과했는가
     private static readonly object s_AudioLock = new object();
