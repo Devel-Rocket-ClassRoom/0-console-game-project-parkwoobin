@@ -104,7 +104,7 @@ public class EnemyChargeController
                 break;
         }
     }
-    private void TryStartCharges(List<Enemy> enemies, int playerX, int playerY)
+    private void TryStartCharges(List<Enemy> enemies, int playerX, int playerY) // 새로운 돌격을 시작할 적들을 선정하여 돌격 상태로 설정하는 메서드, 동시에 돌격할 수 있는 적의 최대 수를 초과하지 않도록 하면서, 랜덤 확률에 따라 돌격을 시작할 적들을 후보로 선정하여 돌격 상태로 설정
     {
         if (_chargingEnemies.Count >= EnemyChargeSettings.MaxSimultaneousCharges)
             return;

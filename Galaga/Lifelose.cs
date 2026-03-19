@@ -4,7 +4,7 @@ using Framework.Engine;
 // 목숨을 잃었을 때 READY를 표시하고 재시작 타이밍을 관리하는 클래스
 public class Lifelose
 {
-    private const float k_ReadyDuration = 2f;
+    private const float k_ReadyDuration = 2f;   // READY 메시지가 표시되는 시간 (초)
 
     private float _timer;
     public bool IsActive { get; private set; }
@@ -30,7 +30,7 @@ public class Lifelose
         }
 
         _timer += deltaTime;
-        if (_timer >= k_ReadyDuration)
+        if (_timer >= k_ReadyDuration)  // READY 대기가 끝나면 활성화 상태를 해제하고 true 반환
         {
             IsActive = false;
             return true;

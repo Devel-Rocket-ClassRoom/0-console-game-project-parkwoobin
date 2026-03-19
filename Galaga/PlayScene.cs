@@ -173,6 +173,7 @@ public partial class PlayScene : Scene
         }
 
         ResetEnemiesForLifeLose();
+        ClearAllBulletsForLifeLose();
         _lifelose.Begin();
     }
 

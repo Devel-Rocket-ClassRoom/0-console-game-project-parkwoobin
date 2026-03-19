@@ -5,6 +5,7 @@ using Framework.Engine;
 // 게임의 플레이 씬을 나타내는 클래스, 적의 생성과 이동, 충돌 처리, 게임 종료 조건 등을 관리하는 게임플로우 관련 메서드들을 포함
 public partial class PlayScene
 {
+    // 플레이어 발사 입력과 2발 제한, 두 번째 발 지연을 처리
     private void HandleShootInput(float deltaTime)
     {
         if (_secondShotTimer > 0f)
@@ -36,6 +37,7 @@ public partial class PlayScene
         }
     }
 
+    // 화면에 남아있는 플레이어 탄환 수를 계산
     private int CountActivePlayerBullets()
     {
         int count = 0;
@@ -52,6 +54,7 @@ public partial class PlayScene
         return count;
     }
 
+    // 플레이어 현재 위치에서 위쪽으로 탄환 생성
     private void FirePlayerBullet()
     {
         Bullet bullet = new Bullet(this, _player.X, _player.Y - 1, false);
@@ -59,6 +62,7 @@ public partial class PlayScene
         AddGameObject(bullet);
     }
 
+    // 일정 주기마다 확률적으로 적 탄환 발사
     private void HandleEnemyAttack(float deltaTime)
     {
         _enemyAttackTimer += deltaTime;
@@ -79,6 +83,7 @@ public partial class PlayScene
         AddGameObject(bullet);
     }
 
+    // 탄환-플레이어/탄환-적 충돌을 처리하고 점수를 반영
     private void ResolveCollisions()
     {
         for (int i = 0; i < _bullets.Count; i++)
@@ -125,6 +130,7 @@ public partial class PlayScene
         }
     }
 
+    // 비활성 오브젝트를 역순으로 정리하여 리스트 인덱스 꼬임 방지
     private void CleanupInactiveObjects()
     {
         for (int i = _bullets.Count - 1; i >= 0; i--)
@@ -149,5 +155,17 @@ public partial class PlayScene
             RemoveGameObject(_enemies[i]);
             _enemies.RemoveAt(i);
         }
+    }
+
+    // 목숨 손실 연출(READY) 시작 시 화면의 모든 탄환을 즉시 제거
+    private void ClearAllBulletsForLifeLose()
+    {
+        for (int i = _bullets.Count - 1; i >= 0; i--)
+        {
+            RemoveGameObject(_bullets[i]);
+        }
+
+        _bullets.Clear();
+        _secondShotTimer = 0f;
     }
 }
