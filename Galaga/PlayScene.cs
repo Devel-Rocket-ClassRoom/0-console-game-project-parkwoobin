@@ -7,8 +7,6 @@ public partial class PlayScene : Scene
 {
     private const float k_PlayerHitCooldown = 0.8f; // 피격 후 무적 시간
     private const float k_EnemyStepInterval = 1f;    // 적이 한 칸 이동하는 간격 (초)
-    private const int k_EnemyInitialLeftMoveCount = 2; // 시작 시 좌측 이동 횟수(최초 1회)
-    private const int k_EnemyRegularMoveCount = 4; // 이후 왕복 시 방향당 이동 횟수
     private const float k_EnemyAttackInterval = 0.5f;    // 적 공격 시도 간격 (초)
     private const double k_EnemyAttackChance = 0.2;      // 공격 시도 시 실제 발사 확률
 

@@ -6,7 +6,7 @@ public static class EnemyAttackSettings
 {
     public const float IntervalSeconds = 3f;    // 돌격 시도 간격 (초)
     public const double StartChance = 0.25; // 스테이지 1의 초기 돌진 확률(기본값)
-    public const double StageBaseStartChanceBonusPerLevel = 0.01; // 스테이지마다 초기 돌진 확률 +1%
+    public const double StageBaseStartChanceBonusPerLevel = 0.05; // 스테이지마다 초기 돌진 확률 +5%
     public const double AliveEnemyCountStartChanceBonusMax = 0.20; // 적 수가 줄었을 때 추가 보너스 최대치
     public const int EnemyCountForBaseChance = 20; // 이 수 이상이면 적 수 보정 0
     public const int EnemyCountForMaxBonus = 2;    // 이 수 이하면 적 수 보정 최대
@@ -29,6 +29,10 @@ public static class EnemyAttackSettings
 
         return ClampChance(stageBaseChance + aliveEnemyBonus);
     }
+    // 돌진 확률 계산 공식:
+    // 기본값에서 스테이지 1 오를때마다 StageBaseStartChanceBonusPerLevel 만큼 증가
+    // 살아있는 적 수가 EnemyCountForBaseChance에서 EnemyCountForMaxBonus로 줄어들 때마다 
+    // 최대 AliveEnemyCountStartChanceBonusMax 만큼 추가 보정이 선형으로 증가, 최종 확률은 0과 1 사이로 제한
 
     private static double ClampChance(double chance)
     {

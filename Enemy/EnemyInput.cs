@@ -50,7 +50,7 @@ public class EnemyInput
 
         enemy.ChargeStartX = enemy.X;
         enemy.ChargeStartY = enemy.Y;
-        enemy.ChargeTargetX = formationOffsetX + enemy.SpawnX;
+        enemy.ChargeTargetX = formationOffsetX + enemy.SpawnX;  // 적이 스폰된 후 이동할 목표 X 좌표를 설정 (적의 원래 스폰 위치 + 포메이션 오프셋)
         enemy.ChargeTargetY = enemy.SpawnY;
     }
 

@@ -21,7 +21,7 @@ public partial class PlayScene
         }
 
         _enemyAttackTimer = 0f;
-        double shotChance = EnemySpawnAttackSettings.GetShotChance(_enemies, k_EnemyAttackChance, _stage);
+        double shotChance = EnemySpawnAttackSettings.GetShotChance(k_EnemyAttackChance, _stage);
         Enemy shooter = EnemyAttack.PickShooter(_enemies, _bullets, _random, shotChance);
         if (shooter == null)
         {
