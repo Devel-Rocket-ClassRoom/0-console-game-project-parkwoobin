@@ -17,12 +17,11 @@ public partial class PlayScene : Scene
     private readonly List<Enemy> _enemies = new List<Enemy>();  // 적 리스트
     private readonly List<Bullet> _bullets = new List<Bullet>(); // 총알 리스트
     private readonly Random _random = new Random();
-    private EnemyChargeController _enemyChargeController;
+    private readonly EnemyInput _enemyInput;
+    private EnemyAttackController _enemyAttackController;
     private Lifelose _lifelose;
     private float _enemyStepTimer;  // 적 이동 타이머
     private int _enemyDirection = -1;    // 적 이동 방향 (1: 오른쪽, -1: 왼쪽)
-    private int _enemyMovesInCurrentPhase; // 현재 방향에서 이동한 횟수
-    private bool _hasUsedInitialLeftPhase; // 시작 좌2 패턴을 이미 사용했는지 여부
     private int _blinkCounter;  // 게임 오버/클리어 메시지 깜빡임 카운터
     private int _score; // 플레이어 점수
     private int _stage; // 현재 스테이지 번호
@@ -31,6 +30,7 @@ public partial class PlayScene : Scene
     private bool _isAllClear;   // 전체 스테이지 클리어 여부
     private float _enemyAttackTimer; // 적 공격 시도 타이머
     private float _playerHitCooldownTimer; // 플레이어 피격 쿨다운
+    private int _enemyFormationOffsetX; // 편대의 스폰 기준 대비 현재 X 오프셋
 
     public event GameAction PlayAgainRequested;
     public event GameAction ClearRequested;
@@ -60,7 +60,8 @@ public partial class PlayScene : Scene
         _initialScore = initialScore;
         _initialStage = initialStage;
         _initialLifes = initialLifes < 0 ? 0 : initialLifes;
-        _enemyChargeController = new EnemyChargeController(_random);
+        _enemyInput = new EnemyInput(_random);
+        _enemyAttackController = new EnemyAttackController(_random);
         _lifelose = new Lifelose();
     }
 
@@ -73,16 +74,16 @@ public partial class PlayScene : Scene
         _isAllClear = false;
         _blinkCounter = 0;
         _enemyDirection = -1;
-        _enemyMovesInCurrentPhase = 0;
-        _hasUsedInitialLeftPhase = false;
+
         _enemyStepTimer = 0f;
         _enemyAttackTimer = 0f;
         _playerHitCooldownTimer = 0f;
+        _enemyFormationOffsetX = 0;
         _lifes = _initialLifes; // 플레이어 목숨 초기화 (스테이지 전환 시 전달된 값 유지)
 
         _enemies.Clear();
         _bullets.Clear();
-        _enemyChargeController.Clear();
+        _enemyAttackController.Clear();
         _lifelose.Reset();
         ClearGameObjects();
 
@@ -100,7 +101,7 @@ public partial class PlayScene : Scene
         ClearGameObjects(); // 게임 오브젝트 리스트 초기화
         _enemies.Clear();   // 적 리스트 초기화
         _bullets.Clear();   // 총알 리스트 초기화
-        _enemyChargeController.Clear();
+        _enemyAttackController.Clear();
         _lifelose.Reset();
     }
 
@@ -144,11 +145,11 @@ public partial class PlayScene : Scene
         UpdateGameObjects(deltaTime);
         HandleShootInput(deltaTime); // 플레이어의 단발 입력 처리(동시 최대 2발)
         MoveEnemies(deltaTime); // 적 이동 처리
-        if (PlaySceneEnemyService.UpdateEnemyCharge(_enemyChargeController, deltaTime, _enemies, _player)) // 적 돌진 처리
+        if (PlaySceneEnemyService.UpdateEnemyAttack(_enemyAttackController, deltaTime, _enemies, _player, _enemyFormationOffsetX, _stage)) // 적 돌진 처리
         {
             LoseLife();
         }
-        HandleEnemyChargeCollision(); // 적 돌진(접촉) 충돌 처리
+        HandleEnemyAttackCollision(); // 적 돌진(접촉) 충돌 처리
         HandleEnemyAttack(deltaTime); // 적의 간헐적 공격 처리
         ResolveCollisions();    // 총알과 적의 충돌 처리
         CleanupInactiveObjects();  // 비활성화된 게임 오브젝트 정리
@@ -178,7 +179,7 @@ public partial class PlayScene : Scene
             return;
         }
 
-        PlaySceneEnemyService.ResetEnemiesForLifeLose(_enemyChargeController, _enemies);
+        PlaySceneEnemyService.ResetEnemiesForLifeLose(_enemyAttackController, _enemies);
         ClearAllBulletsForLifeLose();
         // 이동 패턴 카운터(_enemyDirection/_enemyMovesInCurrentPhase/_hasUsedInitialLeftPhase)는
         // 리셋하지 않아 READY 이후에도 직전 진행 상태를 이어서 사용한다.

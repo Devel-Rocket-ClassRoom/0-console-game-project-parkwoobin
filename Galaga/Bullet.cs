@@ -7,9 +7,10 @@ using NAudio.Wave;
 // 게임의 총알을 나타내는 클래스, 총알의 위치와 이동, 그리기 로직을 담당하며, 적과 플레이어의 총알을 구분하여 처리
 public class Bullet : GameObject
 {
-    private const float k_MoveInterval = 0.025f; // 총알이 한 칸 이동하는 간격 (초)
+    public const float DefaultMoveInterval = 0.025f; // 총알이 한 칸 이동하는 기본 간격 (초)
 
     private readonly int _directionY;
+    private readonly float _moveInterval;
     private readonly LinkedList<(int X, int Y)> _path = new LinkedList<(int X, int Y)>();
     private LinkedListNode<(int X, int Y)> _headNode;
     private float _moveTimer;
@@ -21,11 +22,12 @@ public class Bullet : GameObject
     private static readonly string AttackSoundPath = Path.Combine(AppContext.BaseDirectory, "BGM", "005 Shot.mp3");   // 적 격추 사운드 파일 경로
     private static readonly List<(WaveOutEvent Output, AudioFileReader Audio)> s_ActiveSounds = new List<(WaveOutEvent Output, AudioFileReader Audio)>();
 
-    public Bullet(Scene scene, int x, int y, bool isEnemyBullet) : base(scene)
+    public Bullet(Scene scene, int x, int y, bool isEnemyBullet, float moveInterval = DefaultMoveInterval) : base(scene)
     {
         Name = "Bullet";
         IsEnemyBullet = isEnemyBullet;
         _directionY = IsEnemyBullet ? 1 : -1;
+        _moveInterval = moveInterval;
 
         _headNode = _path.AddFirst((x, y));
         if (!IsEnemyBullet)
@@ -37,7 +39,7 @@ public class Bullet : GameObject
     public override void Update(float deltaTime)    // 총알의 이동을 처리하는 업데이트 메서드, 이동 간격이 지나면 다음 위치로 이동하고, 벽의 범위를 벗어나면 비활성화
     {
         _moveTimer += deltaTime;
-        if (_moveTimer < k_MoveInterval)
+        if (_moveTimer < _moveInterval)
         {
             return;
         }

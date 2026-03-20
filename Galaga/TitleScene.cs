@@ -27,10 +27,15 @@ public class TitleScene : Scene
 
     public override void Draw(ScreenBuffer buffer)
     {
-        buffer.WriteTextCentered(6, "Galaga ", ConsoleColor.Green);
-        buffer.WriteTextCentered(10, "Arrow Keys: Move");
-        buffer.WriteTextCentered(11, "Space: Fire");
-        buffer.WriteTextCentered(13, "ESC: Quit");
-        buffer.WriteTextCentered(15, "Press Enter to Start", ConsoleColor.Yellow);
+        buffer.WriteTextCentered(4, "    ______        __                     ", ConsoleColor.Green);
+        buffer.WriteTextCentered(5, @"  / ____/ ___   / /____   ____   ____✦ ", ConsoleColor.Green);
+        buffer.WriteTextCentered(6, @" / / __ / __ \ / // __ \ / __ \ / __ \ ", ConsoleColor.Green);
+        buffer.WriteTextCentered(7, @"/ /_/ // /_/ // // /_/ // /_/ // /_/ / ", ConsoleColor.Green);
+        buffer.WriteTextCentered(8, @"\____/ \__,_\/_/ \___,_\\__, / \___,_\ ", ConsoleColor.Green);
+        buffer.WriteTextCentered(9, @"                       /____/          ", ConsoleColor.Green);
+        buffer.WriteTextCentered(11, "Arrow Keys: Move");
+        buffer.WriteTextCentered(12, "Space: Fire");
+        buffer.WriteTextCentered(14, "ESC: Quit");
+        buffer.WriteTextCentered(16, "Press Enter to Start", ConsoleColor.Yellow);
     }
 }

@@ -27,15 +27,35 @@ public static class EnemyAttack
             return null;
         }
 
-        List<Enemy> candidates = new List<Enemy>();
+        List<Enemy> spawnCandidates = new List<Enemy>();
+        List<Enemy> normalCandidates = new List<Enemy>();
         for (int i = 0; i < enemies.Count; i++) // 활성화된 적 중에서 총알을 발사할 후보를 선정하는 루프, 동시에 존재할 수 있는 적 총알의 개수를 제한하기 위해 현재 활성화된 적 총알의 개수를 세고, 랜덤 확률에 따라 총알 발사 시도를 결정한 후, 후보 리스트에 추가
         {
-            if (enemies[i].IsActive)
+            Enemy enemy = enemies[i];
+            if (!enemy.IsActive)
             {
-                candidates.Add(enemies[i]);
+                continue;
+            }
+
+            // 화면 밖에서 쏜 탄환은 바로 사라져 체감이 낮으므로, 화면 안 후보만 사격 대상으로 선택
+            bool isInScreen = enemy.X >= Wall.Left && enemy.X <= Wall.Right &&
+                              enemy.Y >= Wall.Top && enemy.Y <= Wall.Bottom;
+            if (!isInScreen)
+            {
+                continue;
+            }
+
+            if (enemy.IsSpawning)
+            {
+                spawnCandidates.Add(enemy);
+            }
+            else
+            {
+                normalCandidates.Add(enemy);
             }
         }
 
+        List<Enemy> candidates = spawnCandidates.Count > 0 ? spawnCandidates : normalCandidates;
         if (candidates.Count == 0)  // 총알을 발사할 후보가 없는 경우 null을 반환하여 총알 발사를 하지 않도록 함
         {
             return null;

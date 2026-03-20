@@ -21,13 +21,15 @@ public partial class PlayScene
         }
 
         _enemyAttackTimer = 0f;
-        Enemy shooter = EnemyAttack.PickShooter(_enemies, _bullets, _random, k_EnemyAttackChance);
+        double shotChance = EnemySpawnAttackSettings.GetShotChance(_enemies, k_EnemyAttackChance, _stage);
+        Enemy shooter = EnemyAttack.PickShooter(_enemies, _bullets, _random, shotChance);
         if (shooter == null)
         {
             return;
         }
 
-        Bullet bullet = new Bullet(this, shooter.X, shooter.Y + 1, true);
+        float bulletMoveInterval = EnemySpawnAttackSettings.GetBulletMoveInterval(shooter);
+        Bullet bullet = new Bullet(this, shooter.X, shooter.Y + 1, true, bulletMoveInterval);
         _bullets.Add(bullet);
         AddGameObject(bullet);
     }
@@ -100,7 +102,7 @@ public partial class PlayScene
                 continue;
             }
 
-            _enemyChargeController.Remove(_enemies[i]);
+            _enemyAttackController.Remove(_enemies[i]);
             RemoveGameObject(_enemies[i]);
             _enemies.RemoveAt(i);
         }

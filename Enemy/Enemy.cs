@@ -25,6 +25,8 @@ public class Enemy : GameObject
 
     public int X { get; set; }
     public int Y { get; set; }
+    public int SpawnX => _spawnX;
+    public int SpawnY => _spawnY;
     public EnemyType Type { get; set; }
     private float _effectTimer;  // 격추 이펙트 타이머
     public bool IsShowingEffect { get; private set; }  // 격추 이펙트 표시 중 여부
@@ -32,9 +34,14 @@ public class Enemy : GameObject
     public int ChargeTargetY { get; set; }  // 돌진 목표 Y 좌표
     public int ChargeStartX { get; set; }  // 돌진 시작 시 원래 X 좌표
     public int ChargeStartY { get; set; }  // 돌진 시작 시 원래 Y 좌표
-    public int ChargePattern { get; set; }  // 0: 직선, 1: 지그재그, 2: 코사인
+    public int ChargePattern { get; set; }  // 0: 직선, 1: 지그재그, 2: 코사인, 3: 복귀
     public bool ChargeReachedTarget { get; set; }  // 플레이어 Y 좌표에 도달했는가
     public bool ChargePassedWall { get; set; }  // 벽을 통과했는가
+    public EnemySpawnPattern SpawnPattern { get; set; }  // 스폰 진입 패턴
+    public bool IsSpawning { get; set; }  // 스폰 연출 진행 중 여부
+    public float SpawnProgress { get; set; }  // 스폰 연출 진행도(0~1)
+    public float SpawnDelaySeconds { get; set; }  // 기차형 연출을 위한 시작 지연
+    public float SpawnCurvePhase { get; set; }  // 곡선 위상 오프셋
     private static readonly object s_AudioLock = new object();
     private static readonly string Zako_HitSoundPath = Path.Combine(AppContext.BaseDirectory, "BGM", "006 Hit on Zako.mp3");   // 적 격추 사운드 파일 경로
     private static readonly string Goei_HitSoundPath = Path.Combine(AppContext.BaseDirectory, "BGM", "007 Hit on Goei.mp3");   // 적 격추 사운드 파일 경로
@@ -52,6 +59,11 @@ public class Enemy : GameObject
         Type = type;
         _effectTimer = 0f;
         IsShowingEffect = false;
+        SpawnPattern = EnemySpawnPattern.Top;
+        IsSpawning = false;
+        SpawnProgress = 0f;
+        SpawnDelaySeconds = 0f;
+        SpawnCurvePhase = 0f;
     }
 
     public void MoveBy(int dx)  // 적을 dx만큼 이동시키는 메서드, X 좌표를 dx만큼 증가시키도록 업데이트
@@ -103,18 +115,23 @@ public class Enemy : GameObject
         }
     }
 
-    public void ResetToSpawnPosition()
-    {
+    public void ResetToSpawnPosition(int formationOffsetX = 0)  // 적을 초기 위치로 리셋하는 메서드
+    {   // formationOffsetX를 더하여 X 좌표를 초기 위치에서 약간 이동시킬 수 있도록 함
         ResetChargeType();
-        X = _spawnX;
+        X = _spawnX + formationOffsetX;
         Y = _spawnY;
-        ChargeTargetX = _spawnX;
-        ChargeTargetY = _spawnY;
-        ChargeStartX = _spawnX;
-        ChargeStartY = _spawnY;
+        ChargeTargetX = X;
+        ChargeTargetY = Y;
+        ChargeStartX = X;
+        ChargeStartY = Y;
         ChargePattern = 0;
         ChargeReachedTarget = false;
         ChargePassedWall = false;
+        IsSpawning = false;
+        SpawnProgress = 0f;
+        SpawnDelaySeconds = 0f;
+        SpawnCurvePhase = 0f;
+        // X 좌표는 스폰 위치에서 formationOffsetX만큼 이동, Y 좌표는 스폰 위치로 리셋, 돌진 관련 속성들도 초기화하여 원래 상태로 복구
     }
 
     public bool IsHitAt(int x, int y)   // 주어진 좌표가 적의 위치와 겹치는지 확인하는 메서드, 적의 유형에 따라 폭이 다르므로 해당 유형에 맞게 범위를 계산하여 판단

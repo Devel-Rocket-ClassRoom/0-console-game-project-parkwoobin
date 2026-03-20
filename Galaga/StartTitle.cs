@@ -1,13 +1,15 @@
 using System;
-using System.Collections.Generic;
 using Framework.Engine;
 using System.IO;
 using NAudio.Wave;
+
+
 // 게임의 시작 연출을 담당하는 클래스, 스테이지 번호와 READY 메시지를 순차적으로 표시하며, 시작 음악 재생과 타이밍 관리를 수행
 public class StartTitle : Scene
 {
-    private const float k_StageTextDuration = 2f; // 스테이지 텍스트 표시 시간 (초)
-    private const float k_ReadyTextDuration = 2f; // READY 텍스트 표시 시간 (초)
+    private const float k_StartTextDuration = 5f; // START 텍스트 최대 표시 시간 (초)
+    private const float k_StageTextDuration = 1f; // 스테이지 텍스트 표시 시간 (초)
+    private const float k_ReadyTextDuration = 1f; // READY 텍스트 표시 시간 (초)
 
     private static readonly string s_StartMusicPath = Path.Combine(AppContext.BaseDirectory, "BGM", "002 Game Start Music.mp3");
 
@@ -22,7 +24,6 @@ public class StartTitle : Scene
     private readonly int _stage;
     private WaveOutEvent _output;
     private AudioFileReader _audio;
-    private bool _musicFinished;
     private float _phaseTimer;  // 현재 단계에서 경과된 시간 (초)
     private Phase _phase;
     private bool _eventRaised;
@@ -39,17 +40,14 @@ public class StartTitle : Scene
         _phase = Phase.Start;
         _phaseTimer = 0f;
         _eventRaised = false;
-        _musicFinished = false;
 
         if (!File.Exists(s_StartMusicPath))
         {
-            _musicFinished = true;
             return;
         }
 
         _audio = new AudioFileReader(s_StartMusicPath);
         _output = new WaveOutEvent();
-        _output.PlaybackStopped += OnPlaybackStopped;
         _output.Init(_audio);
         _output.Play();
     }
@@ -58,7 +56,6 @@ public class StartTitle : Scene
     {
         if (_output != null)
         {
-            _output.PlaybackStopped -= OnPlaybackStopped;
             _output.Stop();
             _output.Dispose();
             _output = null;
@@ -76,7 +73,8 @@ public class StartTitle : Scene
         switch (_phase)
         {
             case Phase.Start:
-                if (_musicFinished)
+                _phaseTimer += deltaTime;
+                if (_phaseTimer >= k_StartTextDuration)
                 {
                     _phase = Phase.Stage;
                     _phaseTimer = 0f;
@@ -133,8 +131,4 @@ public class StartTitle : Scene
         }
     }
 
-    private void OnPlaybackStopped(object sender, StoppedEventArgs e)
-    {
-        _musicFinished = true;
-    }
 }

@@ -4,20 +4,16 @@ using Framework.Engine;
 // 목숨을 잃었을 때 READY를 표시하고 재시작 타이밍을 관리하는 클래스
 public class Lifelose
 {
-    private const float k_ReadyDuration = 2f;   // READY 메시지가 표시되는 시간 (초)
 
-    private float _timer;
     public bool IsActive { get; private set; }
 
     public void Begin()
     {
-        _timer = 0f;
         IsActive = true;
     }
 
     public void Reset()
     {
-        _timer = 0f;
         IsActive = false;
     }
 
@@ -29,8 +25,7 @@ public class Lifelose
             return false;
         }
 
-        _timer += deltaTime;
-        if (_timer >= k_ReadyDuration)  // READY 대기가 끝나면 활성화 상태를 해제하고 true 반환
+        if (Input.IsKeyDown(ConsoleKey.Enter)) // 엔터 키가 눌렸는지 확인하여 게임 시작
         {
             IsActive = false;
             return true;
@@ -47,5 +42,6 @@ public class Lifelose
         }
 
         buffer.WriteText(18, 10, "READY", ConsoleColor.Red);
+        buffer.WriteText(9, 11, "Press Enter to Continue", ConsoleColor.Red);
     }
 }
