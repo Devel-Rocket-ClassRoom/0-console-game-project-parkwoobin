@@ -9,6 +9,7 @@ public static class EnemySpawnAttackSettings
     // 공격 확률 = 스테이지 기본값
     public static double GetShotChance(double baseChance, int stage)
     // 스테이지에 따라 공격 확률을 계산하는 메서드
+    
     {
         int normalizedStage = stage < 1 ? 1 : stage;
 
