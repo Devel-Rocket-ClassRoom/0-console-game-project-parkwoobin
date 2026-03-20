@@ -1,17 +1,20 @@
 using System;
+using System.Collections.Generic;
 using Framework.Engine;
 
-// 게임의 플레이어 캐릭터를 나타내는 클래스, 플레이어의 위치와 이동, 그리기 로직을 담당
+// 게임의 플레이어 캐릭터를 나타내는 클래스, 플레이어의 위치와 이동 공격, 그리기 로직을 담당
 public class Galaga : GameObject
 {
     private const float k_MoveInterval = 0.05f; // 플레이어가 한 칸 이동하는 간격 (초)
     private const float k_EffectDuration = 2f; // 플레이어 격추 이펙트 시간 (초)
+    private const float k_SecondShotDelay = 0.3f; // 첫 발 이후 두 번째 발 발사 지연
 
     private readonly int _startX;
     private readonly int _minX;
     private readonly int _maxX;
     private float _moveTimer;
     private float _effectTimer;
+    private float _secondShotTimer;
 
     public int X { get; private set; }
     public int Y { get; }
@@ -26,6 +29,7 @@ public class Galaga : GameObject
         _minX = minX;
         _maxX = maxX;
         _effectTimer = 0f;
+        _secondShotTimer = 0f;
         IsShowingEffect = false;
     }
 
@@ -34,7 +38,72 @@ public class Galaga : GameObject
         X = _startX;
         _moveTimer = 0f;
         _effectTimer = 0f;
+        _secondShotTimer = 0f;
         IsShowingEffect = false;
+    }
+
+    // 플레이어 발사 입력 및 2발 제한/지연 규칙 처리
+    public void HandleShootInput(float deltaTime, List<Bullet> bullets, Scene scene)
+    {
+        if (IsShowingEffect)
+        {
+            return;
+        }
+
+        if (_secondShotTimer > 0f)
+        {
+            _secondShotTimer -= deltaTime;
+            if (_secondShotTimer < 0f)
+            {
+                _secondShotTimer = 0f;
+            }
+        }
+
+        if (!Input.IsKeyDown(ConsoleKey.Spacebar))
+        {
+            return;
+        }
+
+        int activePlayerBullets = CountActivePlayerBullets(bullets);
+        if (activePlayerBullets >= 2)
+        {
+            return;
+        }
+
+        if (activePlayerBullets == 1 && _secondShotTimer > 0f)
+        {
+            return;
+        }
+
+        Bullet bullet = new Bullet(scene, X, Y - 1, false);
+        bullets.Add(bullet);
+        scene.AddGameObject(bullet);
+
+        if (activePlayerBullets == 0)
+        {
+            _secondShotTimer = k_SecondShotDelay;
+        }
+    }
+
+    public void ResetShootState()
+    {
+        _secondShotTimer = 0f;
+    }
+
+    private static int CountActivePlayerBullets(List<Bullet> bullets)
+    {
+        int count = 0;
+
+        for (int i = 0; i < bullets.Count; i++)
+        {
+            Bullet bullet = bullets[i];
+            if (bullet.IsActive && !bullet.IsEnemyBullet)
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     public void StartExplosion()

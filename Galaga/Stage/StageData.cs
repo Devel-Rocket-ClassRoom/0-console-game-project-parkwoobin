@@ -31,6 +31,20 @@ public static class StageData   // 게임의 각 스테이지에 대한 적 배�
 {
     public const int MaxStage = 10;
 
+    private static readonly Dictionary<int, Func<StageDefinition>> s_stageLoaders = new Dictionary<int, Func<StageDefinition>>
+    {
+        { 1, Stage01.Create },
+        { 2, Stage02.Create },
+        { 3, Stage03.Create },
+        { 4, Stage04.Create },
+        { 5, Stage05.Create },
+        { 6, Stage06.Create },
+        { 7, Stage07.Create },
+        { 8, Stage08.Create },
+        { 9, Stage09.Create },
+        { 10, Stage10.Create },
+    };
+
     private static readonly Dictionary<int, StageDefinition> s_stages = BuildStages();
 
     public static StageDefinition Get(int stageNumber)  //  
@@ -47,19 +61,22 @@ public static class StageData   // 게임의 각 스테이지에 대한 적 배�
     {
         var stages = new Dictionary<int, StageDefinition>();
 
-        for (int stage = 1; stage <= MaxStage; stage++)
+        foreach (KeyValuePair<int, Func<StageDefinition>> stageLoader in s_stageLoaders)
         {
-            stages[stage] = new StageDefinition(stage, BuildEnemyGrid(stage));
+            stages[stageLoader.Key] = stageLoader.Value();
         }
 
         return stages;
     }
+}
 
-    private static LinkedList<EnemySpawn> BuildEnemyGrid(int stage)
+internal static class StageGridBuilder
+{
+    internal static LinkedList<EnemySpawn> BuildStandardGrid(int stage)
     {
         const int rows = 2;
         const int cols = 8;
-        const int startX = 4;
+        const int startX = 5;
         const int startY = 4;
         const int stepX = 4;
         const int stepY = 2;
@@ -95,5 +112,4 @@ public static class StageData   // 게임의 각 스테이지에 대한 적 배�
 
         return Enemy.EnemyType.Zako;
     }
-
 }

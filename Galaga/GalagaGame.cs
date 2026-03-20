@@ -73,7 +73,7 @@ public class GalagaGame : GameApp
         else
         {
             // 다음 스테이지를 위해 새로운 PlayScene 생성 (현재 점수와 다음 스테이지 전달)
-            var nextPlay = new PlayScene(playScene.Score, playScene.Stage + 1);
+            var nextPlay = new PlayScene(playScene.Score, playScene.Stage + 1, playScene.Lifes);
             nextPlay.PlayAgainRequested += ChangeToTitle;
             nextPlay.ClearRequested += () => ChangeToTitleClear(nextPlay);
             _scenes.ChangeScene(nextPlay);

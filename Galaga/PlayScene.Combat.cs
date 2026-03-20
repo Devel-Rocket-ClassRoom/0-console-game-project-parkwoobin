@@ -8,58 +8,7 @@ public partial class PlayScene
     // 플레이어 발사 입력과 2발 제한, 두 번째 발 지연을 처리
     private void HandleShootInput(float deltaTime)
     {
-        if (_secondShotTimer > 0f)
-        {
-            _secondShotTimer -= deltaTime;
-        }
-
-        if (!Input.IsKeyDown(ConsoleKey.Spacebar))
-        {
-            return;
-        }
-
-        int activePlayerBullets = CountActivePlayerBullets();
-        if (activePlayerBullets >= 2)
-        {
-            return;
-        }
-
-        if (activePlayerBullets == 1 && _secondShotTimer > 0f)
-        {
-            return;
-        }
-
-        FirePlayerBullet();
-
-        if (activePlayerBullets == 0)
-        {
-            _secondShotTimer = k_SecondShotDelay;
-        }
-    }
-
-    // 화면에 남아있는 플레이어 탄환 수를 계산
-    private int CountActivePlayerBullets()
-    {
-        int count = 0;
-
-        for (int i = 0; i < _bullets.Count; i++)
-        {
-            Bullet bullet = _bullets[i];
-            if (bullet.IsActive && !bullet.IsEnemyBullet)
-            {
-                count++;
-            }
-        }
-
-        return count;
-    }
-
-    // 플레이어 현재 위치에서 위쪽으로 탄환 생성
-    private void FirePlayerBullet()
-    {
-        Bullet bullet = new Bullet(this, _player.X, _player.Y - 1, false);
-        _bullets.Add(bullet);
-        AddGameObject(bullet);
+        _player.HandleShootInput(deltaTime, _bullets, this);
     }
 
     // 일정 주기마다 확률적으로 적 탄환 발사
@@ -166,6 +115,6 @@ public partial class PlayScene
         }
 
         _bullets.Clear();
-        _secondShotTimer = 0f;
+        _player.ResetShootState();
     }
 }

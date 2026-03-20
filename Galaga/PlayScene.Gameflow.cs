@@ -32,7 +32,7 @@ public partial class PlayScene
         }
     }
 
-    private void MoveEnemies(float deltaTime)   // 적의 이동을 처리하는 메서드, 일정 간격마다 적들이 좌우로 이동하며, 이동 방향을 바꿀 때 벽에 부딪히는지 확인하여 방향을 반대로 바꾸거나 이동하지 않도록 처리
+    private void MoveEnemies(float deltaTime)   // X축 5~35 범위 내에서 좌우 왕복 이동 처리
     {
         _enemyStepTimer += deltaTime;
         if (_enemyStepTimer < k_EnemyStepInterval)
@@ -41,62 +41,48 @@ public partial class PlayScene
         }
 
         _enemyStepTimer = 0f;
-        int direction = _random.Next(0, 2) == 0 ? -1 : 1;
+        int dx = _enemyDirection;
 
-        if (!CanMoveEnemiesBy(direction))
+        if (!CanMoveEnemiesBy(dx))
         {
-            if (CanMoveEnemiesBy(-direction))
-            {
-                direction *= -1;
-            }
-            else
+            _enemyDirection = -_enemyDirection;
+            dx = _enemyDirection;
+
+            if (!CanMoveEnemiesBy(dx))
             {
                 return;
             }
         }
 
-        _enemyDirection = direction;
-
-        for (int i = 0; i < _enemies.Count; i++)    // 적들을 이동시키는 루프, 각 적이 활성화되어 있고 돌진 중이 아닌 경우에만 이동하도록 처리
+        for (int i = 0; i < _enemies.Count; i++)
         {
             Enemy enemy = _enemies[i];
             if (enemy.IsActive && !_enemyChargeController.IsCharging(enemy))
             {
-                enemy.MoveBy(direction);
+                enemy.MoveBy(dx, 0);
             }
         }
+
+        CheckEndConditions();
     }
 
     private bool CanMoveEnemiesBy(int dx)   // 적들이 주어진 방향으로 이동할 수 있는지 확인하는 메서드, 각 적이 이동 후 벽에 부딪히는지 확인하여 이동 가능 여부를 반환
     {
-        if (dx == 0)
-        {
-            return false;
-        }
+        const int k_EnemyMinX = 4;
+        const int k_EnemyMaxX = 35;
 
-        for (int i = 0; i < _enemies.Count; i++)    // 각 적이 이동 후 벽에 부딪히는지 확인하는 루프
+        for (int i = 0; i < _enemies.Count; i++)
         {
             Enemy enemy = _enemies[i];
-            if (!enemy.IsActive)
+            if (enemy.IsActive && !_enemyChargeController.IsCharging(enemy))
             {
-                continue;
-            }
-
-            if (_enemyChargeController.IsCharging(enemy))   // 돌진 중인 적은 이동 체크에서 제외하여 돌진이 보이도록 처리
-            {
-                continue;
-            }
-
-            int halfWidth = enemy.Type == Enemy.EnemyType.Boss1 || enemy.Type == Enemy.EnemyType.Boss2 ? 2 : 1;
-            int nextLeft = (enemy.X + dx) - halfWidth;
-            int nextRight = (enemy.X + dx) + halfWidth;
-
-            if (nextLeft < Wall.Left || nextRight > Wall.Right)
-            {
-                return false;
+                int newX = enemy.X + dx;
+                if (newX < k_EnemyMinX || newX > k_EnemyMaxX)
+                {
+                    return false;
+                }
             }
         }
-
         return true;
     }
 
