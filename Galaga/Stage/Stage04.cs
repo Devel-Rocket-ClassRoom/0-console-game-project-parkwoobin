@@ -33,7 +33,7 @@ public static class Stage04
                     type = Enemy.EnemyType.Zako;
                 }
 
-                EnemySpawnPattern pattern = EnemySpawnPattern.Right;
+                EnemySpawnPattern pattern = EnemySpawnPattern.RightTop;
                 enemies.AddLast(new EnemySpawn(x, y, type, pattern));
             }
         }

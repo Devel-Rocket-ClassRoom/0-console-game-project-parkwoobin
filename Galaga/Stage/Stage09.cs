@@ -34,7 +34,9 @@ public static class Stage09
                     type = Enemy.EnemyType.Zako;
                 }
 
-                EnemySpawnPattern pattern = (slotIndex < 8) ? EnemySpawnPattern.Bottom : EnemySpawnPattern.Top;
+                EnemySpawnPattern pattern = (slotIndex < 8)
+                    ? ((col % 2 == 0) ? EnemySpawnPattern.LeftBottom : EnemySpawnPattern.RightBottom)
+                    : EnemySpawnPattern.Top;
                 enemies.AddLast(new EnemySpawn(x, y, type, pattern));
             }
         }

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Framework.Engine;
+using NAudio.Wave;
+using System.IO;
 
 // 게임의 플레이 씬을 나타내는 클래스, 적의 생성과 이동, 충돌 처리, 게임 종료 조건 등을 관리하는 게임플로우 관련 메서드들을 포함
 public partial class PlayScene : Scene
@@ -43,6 +45,10 @@ public partial class PlayScene : Scene
     private int _initialLifes;  // 초기 목숨 수, 다음 스테이지 전환 시 값을 유지하기 위해 사용
 
     private int _lifes;  // 플레이어 목숨 수, 게임 재시작 시 초기화하여 유지할 수 있도록 함
+
+    private static readonly string DeathPath = Path.Combine(AppContext.BaseDirectory, "BGM", "001 Death.mp3");
+    private WaveOutEvent _deathOutput;  // 죽음 사운드 재생을 위한 WaveOutEvent과 AudioFileReader
+    private AudioFileReader _deathAudio;    // 죽음 사운드 재생을 위한 WaveOutEvent과 AudioFileReader
 
     public PlayScene() : this(0, 1, 3)
     {
@@ -96,6 +102,7 @@ public partial class PlayScene : Scene
 
     public override void Unload()   // 게임 종료 시 리소스 정리, 게임 오브젝트 리스트와 적, 총알 리스트를 모두 초기화하여 메모리 해제
     {
+        DisposeDeathSound();
         ClearGameObjects(); // 게임 오브젝트 리스트 초기화
         _enemies.Clear();   // 적 리스트 초기화
         _bullets.Clear();   // 총알 리스트 초기화
@@ -169,6 +176,7 @@ public partial class PlayScene : Scene
         _lifes--;
         _playerHitCooldownTimer = k_PlayerHitCooldown;
         _player.StartExplosion();
+        PlayDeathSound();
 
         if (_lifes <= 0)
         {
@@ -182,6 +190,37 @@ public partial class PlayScene : Scene
         // 이동 패턴 카운터(_enemyDirection/_enemyMovesInCurrentPhase/_hasUsedInitialLeftPhase)는
         // 리셋하지 않아 READY 이후에도 직전 진행 상태를 이어서 사용한다.
         _lifelose.Begin();
+    }
+
+    private void PlayDeathSound()   // 플레이어 사망 시 사운드 재생, 사운드 파일이 존재하는 경우에만 재생하며, 재생이 끝나면 리소스를 정리하도록 이벤트 핸들러 등록
+    {
+        if (!File.Exists(DeathPath))
+        {
+            return;
+        }
+
+        DisposeDeathSound();
+
+        _deathAudio = new AudioFileReader(DeathPath);
+        _deathOutput = new WaveOutEvent();
+        _deathOutput.Init(_deathAudio);
+        _deathOutput.PlaybackStopped += (sender, e) => DisposeDeathSound();
+        _deathOutput.Play();
+    }
+
+    private void DisposeDeathSound()    // 사운드 재생이 끝나면 알아서 정리
+    {
+        if (_deathOutput != null)
+        {
+            _deathOutput.Dispose();
+            _deathOutput = null;
+        }
+
+        if (_deathAudio != null)
+        {
+            _deathAudio.Dispose();
+            _deathAudio = null;
+        }
     }
 
     public override void Draw(ScreenBuffer buffer)  // 게임 화면을 그리는 메서드, 게임 오브젝트를 그린 후 점수와 조작법을 표시하고, 게임 오버 또는 클리어 상태인 경우 메시지를 깜빡이도록 처리

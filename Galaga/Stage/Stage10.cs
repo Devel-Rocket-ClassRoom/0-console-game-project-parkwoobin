@@ -35,8 +35,8 @@ public static class Stage10
                 }
 
                 EnemySpawnPattern pattern = (slotIndex < 10)
-                    ? EnemySpawnPattern.Bottom
-                    : ((col % 2 == 0) ? EnemySpawnPattern.Left : EnemySpawnPattern.Right);
+                    ? ((col % 2 == 0) ? EnemySpawnPattern.LeftBottom : EnemySpawnPattern.RightBottom)
+                    : ((col % 2 == 0) ? EnemySpawnPattern.LeftTop : EnemySpawnPattern.RightTop);
                 enemies.AddLast(new EnemySpawn(x, y, type, pattern));
             }
         }

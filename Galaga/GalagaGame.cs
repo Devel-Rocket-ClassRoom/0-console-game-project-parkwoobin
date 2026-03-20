@@ -59,7 +59,7 @@ public class GalagaGame : GameApp
 
     private void ChangeToTitleClear(PlayScene playScene)
     {
-        var clear = new ClearTitle(playScene.Score, playScene.Stage, StageData.MaxStage, playScene.IsAllClear);
+        var clear = new ClearTitle(playScene.Score, playScene.Stage, StageData.MaxStage, playScene.Lifes, playScene.IsAllClear);
         clear.ContinueRequested += () => HandleClearContinue(playScene);
         _scenes.ChangeScene(clear);
     }

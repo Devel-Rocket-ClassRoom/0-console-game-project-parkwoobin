@@ -27,8 +27,8 @@ public partial class PlayScene
         {
             return;
         }
-
-        float bulletMoveInterval = EnemySpawnAttackSettings.GetBulletMoveInterval(shooter);
+        // 스폰 중인 적이 발사하는 탄환은 더 느리게 이동
+        float bulletMoveInterval = EnemySpawnAttackSettings.GetBulletMoveInterval(shooter); 
         Bullet bullet = new Bullet(this, shooter.X, shooter.Y + 1, true, bulletMoveInterval);
         _bullets.Add(bullet);
         AddGameObject(bullet);

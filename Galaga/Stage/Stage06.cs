@@ -29,7 +29,7 @@ public static class Stage06
                     type = Enemy.EnemyType.Goei;
                 }
 
-                EnemySpawnPattern pattern = (col % 2 == 0) ? EnemySpawnPattern.Left : EnemySpawnPattern.Right;
+                EnemySpawnPattern pattern = (col % 2 == 0) ? EnemySpawnPattern.LeftTop : EnemySpawnPattern.RightTop;
                 enemies.AddLast(new EnemySpawn(x, y, type, pattern));
             }
         }

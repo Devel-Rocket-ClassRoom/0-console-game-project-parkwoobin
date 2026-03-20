@@ -34,7 +34,7 @@ public static class Stage07
                     type = Enemy.EnemyType.Zako;
                 }
 
-                EnemySpawnPattern pattern = (row == 0) ? EnemySpawnPattern.Left : EnemySpawnPattern.Right;  //  위쪽 행은 왼쪽으로, 아래쪽 행은 오른쪽으로 이동하는 패턴
+                EnemySpawnPattern pattern = (row == 0) ? EnemySpawnPattern.LeftTop : EnemySpawnPattern.RightBottom;
                 enemies.AddLast(new EnemySpawn(x, y, type, pattern));
             }
         }

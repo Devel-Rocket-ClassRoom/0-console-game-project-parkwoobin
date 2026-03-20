@@ -29,7 +29,25 @@ public static class Stage08
                     type = Enemy.EnemyType.Goei;
                 }
 
-                EnemySpawnPattern pattern = (EnemySpawnPattern)((row + col) % 4);
+                EnemySpawnPattern pattern;
+                switch ((row + col) % 5)
+                {
+                    case 0:
+                        pattern = EnemySpawnPattern.Top;
+                        break;
+                    case 1:
+                        pattern = EnemySpawnPattern.LeftTop;
+                        break;
+                    case 2:
+                        pattern = EnemySpawnPattern.LeftBottom;
+                        break;
+                    case 3:
+                        pattern = EnemySpawnPattern.RightTop;
+                        break;
+                    default:
+                        pattern = EnemySpawnPattern.RightBottom;
+                        break;
+                }
                 enemies.AddLast(new EnemySpawn(x, y, type, pattern));
             }
         }

@@ -28,7 +28,7 @@ public static class Stage05
                     type = (row == 0) ? Enemy.EnemyType.Goei : Enemy.EnemyType.Zako;
                 }
 
-                EnemySpawnPattern pattern = (col % 2 == 0) ? EnemySpawnPattern.Top : EnemySpawnPattern.Bottom;
+                EnemySpawnPattern pattern = (col % 2 == 0) ? EnemySpawnPattern.Top : EnemySpawnPattern.RightBottom;
                 enemies.AddLast(new EnemySpawn(x, y, type, pattern));
             }
         }

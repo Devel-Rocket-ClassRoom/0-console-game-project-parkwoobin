@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public static class EnemyAttack
 {
     public const int MaxEnemyBullets = 2;   // 동시에 존재할 수 있는 적 총알의 최대 개수, 게임의 난이도 조절을 위해 설정된 상수
+    public const float NormalEnemyBulletMoveInterval = 0.08f; // 일반 적 탄환 이동 간격(클수록 느림)
 
     public static Enemy PickShooter(List<Enemy> enemies, List<Bullet> bullets, Random random, double spawnChance)
     {
@@ -32,7 +33,7 @@ public static class EnemyAttack
         for (int i = 0; i < enemies.Count; i++) // 활성화된 적 중에서 총알을 발사할 후보를 선정하는 루프, 동시에 존재할 수 있는 적 총알의 개수를 제한하기 위해 현재 활성화된 적 총알의 개수를 세고, 랜덤 확률에 따라 총알 발사 시도를 결정한 후, 후보 리스트에 추가
         {
             Enemy enemy = enemies[i];
-            if (!enemy.IsActive)
+            if (!enemy.IsActive || enemy.IsShowingEffect)
             {
                 continue;
             }
@@ -66,7 +67,7 @@ public static class EnemyAttack
 
     public static bool CrushEnemy(Enemy enemy, int playerX, int playerY)    // 적과 플레이어가 겹치는지 확인하는 메서드, 적이 플레이어와 같은 Y 좌표에 있고, X 좌표가 겹치는 범위에 있는지 판단하여 겹침 여부를 반환
     {
-        if (enemy == null || !enemy.IsActive)
+        if (enemy == null || !enemy.IsActive || enemy.IsShowingEffect)
         {
             return false;
         }
@@ -87,6 +88,8 @@ public static class EnemyAttack
 
         return enemyLeft <= playerRight && enemyRight >= playerLeft;
     }
+
+
 
     public static bool ChargeTowardsPlayer(Enemy enemy, int playerX, int playerY)
     {

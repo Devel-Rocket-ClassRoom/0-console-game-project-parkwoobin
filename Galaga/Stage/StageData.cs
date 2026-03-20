@@ -21,9 +21,10 @@ public readonly struct EnemySpawn
 public enum EnemySpawnPattern
 {
     Top = 0,
-    Bottom = 1,
-    Left = 2,
-    Right = 3,
+    LeftTop = 1,
+    LeftBottom = 2,
+    RightTop = 3,
+    RightBottom = 4,
 }
 
 public sealed class StageDefinition

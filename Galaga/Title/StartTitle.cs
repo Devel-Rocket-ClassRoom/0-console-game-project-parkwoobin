@@ -7,11 +7,12 @@ using NAudio.Wave;
 // 게임의 시작 연출을 담당하는 클래스, 스테이지 번호와 READY 메시지를 순차적으로 표시하며, 시작 음악 재생과 타이밍 관리를 수행
 public class StartTitle : Scene
 {
-    private const float k_StartTextDuration = 5f; // START 텍스트 최대 표시 시간 (초)
+    private const float k_StartTextDuration = 6.5f; // START 텍스트 최대 표시 시간 (초)
     private const float k_StageTextDuration = 1f; // 스테이지 텍스트 표시 시간 (초)
     private const float k_ReadyTextDuration = 1f; // READY 텍스트 표시 시간 (초)
 
     private static readonly string s_StartMusicPath = Path.Combine(AppContext.BaseDirectory, "BGM", "002 Game Start Music.mp3");
+    private static readonly string StageFlagPath = Path.Combine(AppContext.BaseDirectory, "BGM", "003 Stage Flag.mp3");
 
     private enum Phase
     {
@@ -22,11 +23,14 @@ public class StartTitle : Scene
     }
 
     private readonly int _stage;
-    private WaveOutEvent _output;
-    private AudioFileReader _audio;
+    private WaveOutEvent _startOutput;  // 시작 음악 재생을 위한 WaveOutEvent과 AudioFileReader
+    private AudioFileReader _startAudio;    // 시작 음악 재생을 위한 WaveOutEvent과 AudioFileReader
+    private WaveOutEvent _stageFlagOutput;  // 스테이지 깃발 사운드 재생을 위한 WaveOutEvent과 AudioFileReader
+    private AudioFileReader _stageFlagAudio;    // 스테이지 깃발 사운드 재생을 위한 WaveOutEvent과 AudioFileReader
     private float _phaseTimer;  // 현재 단계에서 경과된 시간 (초)
     private Phase _phase;
     private bool _eventRaised;
+    private bool _stageFlagPlayed;
 
     public event GameAction StartCompleted;
 
@@ -40,31 +44,45 @@ public class StartTitle : Scene
         _phase = Phase.Start;
         _phaseTimer = 0f;
         _eventRaised = false;
+        _stageFlagPlayed = false;
 
         if (!File.Exists(s_StartMusicPath))
         {
             return;
         }
 
-        _audio = new AudioFileReader(s_StartMusicPath);
-        _output = new WaveOutEvent();
-        _output.Init(_audio);
-        _output.Play();
+        _startAudio = new AudioFileReader(s_StartMusicPath); // 시작 음악 파일을 로드하여 재생 준비
+        _startOutput = new WaveOutEvent();   // WaveOutEvent 객체를 생성하여 오디오 출력 설정
+        _startOutput.Init(_startAudio);   // 오디오 파일을 WaveOutEvent에 연결하여 재생 준비
+        _startOutput.Play(); // 시작 음악 재생
     }
 
     public override void Unload()
     {
-        if (_output != null)
+        if (_startOutput != null)
         {
-            _output.Stop();
-            _output.Dispose();
-            _output = null;
+            _startOutput.Stop();
+            _startOutput.Dispose();
+            _startOutput = null;
         }
 
-        if (_audio != null)
+        if (_startAudio != null)
         {
-            _audio.Dispose();
-            _audio = null;
+            _startAudio.Dispose();
+            _startAudio = null;
+        }
+
+        if (_stageFlagOutput != null)
+        {
+            _stageFlagOutput.Stop();
+            _stageFlagOutput.Dispose();
+            _stageFlagOutput = null;
+        }
+
+        if (_stageFlagAudio != null)
+        {
+            _stageFlagAudio.Dispose();
+            _stageFlagAudio = null;
         }
     }
 
@@ -78,6 +96,7 @@ public class StartTitle : Scene
                 {
                     _phase = Phase.Stage;
                     _phaseTimer = 0f;
+                    PlayStageFlagSound();
                 }
                 break;
             case Phase.Stage:
@@ -103,6 +122,20 @@ public class StartTitle : Scene
                 }
                 break;
         }
+    }
+
+    private void PlayStageFlagSound()
+    {
+        if (_stageFlagPlayed || !File.Exists(StageFlagPath))
+        {
+            return;
+        }
+
+        _stageFlagPlayed = true;
+        _stageFlagAudio = new AudioFileReader(StageFlagPath);
+        _stageFlagOutput = new WaveOutEvent();
+        _stageFlagOutput.Init(_stageFlagAudio); // 스테이지 깃발 사운드 파일을 로드하여 재생 준비
+        _stageFlagOutput.Play();
     }
 
     public override void Draw(ScreenBuffer buffer)

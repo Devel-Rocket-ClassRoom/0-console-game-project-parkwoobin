@@ -28,7 +28,7 @@ public static class Stage02
                     type = Enemy.EnemyType.Zako;
                 }
 
-                EnemySpawnPattern pattern = EnemySpawnPattern.Bottom;   //  모든 적이 아래에서 올라오는 패턴
+                EnemySpawnPattern pattern = EnemySpawnPattern.LeftBottom;
                 enemies.AddLast(new EnemySpawn(x, y, type, pattern));
             }
         }

@@ -10,6 +10,9 @@ public class EnemyAttackController
     private readonly Random _random;
     private float _chargeTimer;
     private float _moveTimer;
+    private static readonly object s_AudioLock = new object();
+    private static readonly string FallingSoundPath = Path.Combine(AppContext.BaseDirectory, "BGM", "004 Alien Flying.mp3");
+    private static readonly List<(WaveOutEvent Output, AudioFileReader Audio)> s_ActiveSounds = new List<(WaveOutEvent Output, AudioFileReader Audio)>();
 
     public EnemyAttackController(Random random) // 적 돌격 컨트롤러의 생성자, 랜덤 객체를 받아서 돌격 시작 확률 계산에 사용
     {
@@ -59,7 +62,7 @@ public class EnemyAttackController
 
         foreach (var e in _chargingEnemies)
         {
-            if (e == null || !e.IsActive)
+            if (e == null || !e.IsActive || e.IsShowingEffect)
             {
                 finished.Add(e);
                 continue;
@@ -69,7 +72,10 @@ public class EnemyAttackController
 
             // 충돌 체크
             if (e.ChargePattern != 3 && EnemyAttack.CrushEnemy(e, playerX, playerY))
+            {
                 return true;
+            }
+
 
             // 화면 밖 → 복귀
             if (e.ChargePattern != 3 && e.Y > Wall.Bottom)
@@ -85,7 +91,7 @@ public class EnemyAttackController
                 continue;
             }
 
-            if (e.ChargePattern == 3 && e.Y >= e.ChargeTargetY && e.X == e.ChargeTargetX)
+            if (e.ChargePattern == 3 && e.Y >= e.ChargeTargetY && e.X == e.ChargeTargetX)   // 복귀 완료
             {
                 EnemyReturnOverlapResolver.Apply(e, enemies);
                 e.ResetChargeType();
@@ -189,5 +195,44 @@ public class EnemyAttackController
         charger.SetChargeType();
 
         _chargingEnemies.Add(charger);
+        PlayChargeSound();
+    }
+
+    private static void PlayChargeSound()
+    {
+        if (!File.Exists(FallingSoundPath))
+        {
+            return;
+        }
+
+        AudioFileReader audio = new AudioFileReader(FallingSoundPath);
+        WaveOutEvent output = new WaveOutEvent();
+
+        output.PlaybackStopped += (sender, e) =>
+        {
+            lock (s_AudioLock)
+            {
+                for (int i = s_ActiveSounds.Count - 1; i >= 0; i--)
+                {
+                    if (ReferenceEquals(s_ActiveSounds[i].Output, output))
+                    {
+                        s_ActiveSounds.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+
+            output.Dispose();
+            audio.Dispose();
+        };
+
+        output.Init(audio);
+
+        lock (s_AudioLock)
+        {
+            s_ActiveSounds.Add((output, audio));
+        }
+
+        output.Play();
     }
 }
